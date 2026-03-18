@@ -3,9 +3,9 @@ import { createClient } from '@libsql/client';
 // Initialize database client
 // Uses SQLite locally and on Railway (no external database needed)
 // Railway will persist the database file in the deployment volume
+// Use SQLite - ignore any DATABASE_URL from Railway that might be set
 export const db = createClient({
-  url: process.env.DATABASE_URL || 'file:data/names.db',
-  authToken: process.env.DATABASE_AUTH_TOKEN,
+  url: 'file:data/names.db',
 });
 
 // Initialize database schema
