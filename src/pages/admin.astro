@@ -73,7 +73,6 @@ const shareUrl = `https://namefinder-production.up.railway.app/?token=${shareTok
                   <button
                     class="delete-button"
                     data-name={String(row.name)}
-                    onclick="deleteName(this)"
                     title="Eintrag löschen"
                   >🗑️</button>
                 </div>
@@ -119,22 +118,23 @@ const shareUrl = `https://namefinder-production.up.railway.app/?token=${shareTok
     alert('Link kopiert! 📋');
   }
 
-  async function deleteName(btn: HTMLButtonElement) {
-    const name = btn.dataset.name;
-    if (!name) return;
-    if (!confirm(`"${name}" und alle Einträge dazu wirklich löschen?`)) return;
-    const res = await fetch('/api/delete-name', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
+  document.querySelectorAll<HTMLButtonElement>('.delete-button').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const name = btn.dataset.name;
+      if (!name) return;
+      if (!confirm(`"${name}" und alle Einträge dazu wirklich löschen?`)) return;
+      const res = await fetch('/api/delete-name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      if (res.ok) {
+        btn.closest('.name-card')?.remove();
+      } else {
+        alert('Löschen fehlgeschlagen.');
+      }
     });
-    if (res.ok) {
-      const card = btn.closest('.name-card') as HTMLElement;
-      card?.remove();
-    } else {
-      alert('Löschen fehlgeschlagen.');
-    }
-  }
+  });
 
   async function importData() {
     const fileInput = document.getElementById('importFile') as HTMLInputElement;
