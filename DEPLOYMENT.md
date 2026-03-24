@@ -67,7 +67,7 @@ In den Railway Environment Variables:
 3. Sende den Link an Freunde per WhatsApp, E-Mail, etc.
 
 Der Link enthält den Token, sodass Freunde sich automatisch anmelden können!
-
+    
 ## Vorteile dieser Lösung
 
 ✅ **Keine externe Datenbank nötig** - SQLite läuft direkt in der App
