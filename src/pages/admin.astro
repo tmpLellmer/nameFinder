@@ -80,6 +80,24 @@ const shareUrl = `${Astro.url.origin}/?token=${shareToken}`;
         </div>
       )}
 
+      <div class="backup-section">
+        <h2>💾 Datensicherung</h2>
+        <div class="backup-actions">
+          <div class="backup-item">
+            <p>Alle Namen als JSON-Datei herunterladen:</p>
+            <a href="/api/export" class="backup-button download-button">Exportieren ⬇️</a>
+          </div>
+          <div class="backup-item">
+            <p>Namen aus einer JSON-Datei wiederherstellen:</p>
+            <div class="upload-box">
+              <input type="file" id="importFile" accept=".json" class="file-input" />
+              <button onclick="importData()" class="backup-button upload-button">Importieren ⬆️</button>
+            </div>
+            <p id="importStatus" class="import-status"></p>
+          </div>
+        </div>
+      </div>
+
       <a href="/logout" class="logout-link">Abmelden</a>
     </div>
   </div>
@@ -91,6 +109,27 @@ const shareUrl = `${Astro.url.origin}/?token=${shareToken}`;
     input.select();
     document.execCommand('copy');
     alert('Link kopiert! 📋');
+  }
+
+  async function importData() {
+    const fileInput = document.getElementById('importFile') as HTMLInputElement;
+    const status = document.getElementById('importStatus') as HTMLParagraphElement;
+    const file = fileInput.files?.[0];
+    if (!file) {
+      status.textContent = 'Bitte eine Datei auswählen.';
+      status.className = 'import-status error';
+      return;
+    }
+    const text = await file.text();
+    const res = await fetch('/api/import', { method: 'POST', body: text });
+    const json = await res.json();
+    if (res.ok) {
+      status.textContent = `${json.imported} Einträge importiert.`;
+      status.className = 'import-status success';
+    } else {
+      status.textContent = json.error || 'Import fehlgeschlagen.';
+      status.className = 'import-status error';
+    }
   }
 </script>
 
@@ -249,6 +288,86 @@ const shareUrl = `${Astro.url.origin}/?token=${shareToken}`;
   .suggested-by {
     color: #999;
     font-size: 0.9rem;
+  }
+
+  .backup-section {
+    background: #f5f5f5;
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+  }
+
+  .backup-section h2 {
+    margin: 0 0 1rem 0;
+    color: #333;
+    font-size: 1.3rem;
+  }
+
+  .backup-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .backup-item p {
+    margin: 0 0 0.8rem 0;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .backup-button {
+    display: inline-block;
+    padding: 0.7rem 1.2rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+
+  .download-button {
+    background: #667eea;
+    color: white;
+  }
+
+  .download-button:hover {
+    background: #5a6fd6;
+  }
+
+  .upload-button {
+    background: #ff9800;
+    color: white;
+  }
+
+  .upload-button:hover {
+    background: #e68900;
+  }
+
+  .upload-box {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .file-input {
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .import-status {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.85rem;
+  }
+
+  .import-status.success {
+    color: #4caf50;
+  }
+
+  .import-status.error {
+    color: #f44336;
   }
 
   .logout-link {
