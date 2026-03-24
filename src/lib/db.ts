@@ -48,6 +48,14 @@ export async function addSuggestion(name: string, suggestedBy: string = 'Anonym'
   });
 }
 
+// Delete all entries for a given name (case-insensitive)
+export async function deleteName(name: string) {
+  await db.execute({
+    sql: 'DELETE FROM name_suggestions WHERE LOWER(name) = LOWER(?)',
+    args: [name.trim()],
+  });
+}
+
 // Check if database is initialized
 export async function isDatabaseReady() {
   try {

@@ -17,7 +17,7 @@ const totalSuggestions = suggestions.reduce((acc, row) => acc + Number(row.count
 
 // Generate share link
 const shareToken = generateShareToken(CONTRIBUTOR_PASSWORD);
-const shareUrl = `${Astro.url.origin}/?token=${shareToken}`;
+const shareUrl = `https://namefinder-production.up.railway.app/?token=${shareToken}`;
 ---
 
 <Layout title="Admin - Namen Übersicht 👶">
@@ -65,10 +65,18 @@ const shareUrl = `${Astro.url.origin}/?token=${shareToken}`;
         <div class="names-list">
           <h2>📝 Alle Vorschläge</h2>
           {suggestions.map((row) => (
-            <div class="name-card">
+            <div class="name-card" id={`card-${String(row.name).toLowerCase().replace(/[^a-z0-9]/g, '-')}`}>
               <div class="name-header">
                 <span class="name">{row.name}</span>
-                <span class="count-badge">{row.count}×</span>
+                <div class="name-actions">
+                  <span class="count-badge">{row.count}×</span>
+                  <button
+                    class="delete-button"
+                    data-name={String(row.name)}
+                    onclick="deleteName(this)"
+                    title="Eintrag löschen"
+                  >🗑️</button>
+                </div>
               </div>
               {row.suggested_by_list && (
                 <div class="suggested-by">
@@ -109,6 +117,23 @@ const shareUrl = `${Astro.url.origin}/?token=${shareToken}`;
     input.select();
     document.execCommand('copy');
     alert('Link kopiert! 📋');
+  }
+
+  async function deleteName(btn: HTMLButtonElement) {
+    const name = btn.dataset.name;
+    if (!name) return;
+    if (!confirm(`"${name}" und alle Einträge dazu wirklich löschen?`)) return;
+    const res = await fetch('/api/delete-name', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (res.ok) {
+      const card = btn.closest('.name-card') as HTMLElement;
+      card?.remove();
+    } else {
+      alert('Löschen fehlgeschlagen.');
+    }
   }
 
   async function importData() {
@@ -288,6 +313,28 @@ const shareUrl = `${Astro.url.origin}/?token=${shareToken}`;
   .suggested-by {
     color: #999;
     font-size: 0.9rem;
+  }
+
+  .name-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 6px;
+    opacity: 0.5;
+    transition: opacity 0.2s, background 0.2s;
+  }
+
+  .delete-button:hover {
+    opacity: 1;
+    background: #fee2e2;
   }
 
   .backup-section {
