@@ -1,6 +1,25 @@
 import type { APIRoute } from 'astro';
 import { isValidPassword, verifyToken, getPasswordFromToken, isValidAdminPassword } from '../lib/auth';
 
+export const GET: APIRoute = async ({ url, cookies, redirect }) => {
+  const token = url.searchParams.get('token');
+  if (!token || !verifyToken(token)) {
+    return redirect('/');
+  }
+  const authPassword = getPasswordFromToken(token);
+  if (!authPassword) {
+    return redirect('/');
+  }
+  cookies.set('auth', authPassword, {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+  return redirect('/suggest');
+};
+
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const formData = await request.formData();
   const password = formData.get('password')?.toString();

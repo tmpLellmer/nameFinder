@@ -1,8 +1,14 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { verifyToken } from '../lib/auth';
 
 const url = new URL(Astro.request.url);
 const token = url.searchParams.get('token');
+
+// Auto-login when a valid token is in the URL
+if (token && verifyToken(token)) {
+  return Astro.redirect(`/auth?token=${encodeURIComponent(token)}`, 307);
+}
 ---
 
 <Layout title="Baby Namen Sammler 👶">
